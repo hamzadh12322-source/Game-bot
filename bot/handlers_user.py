@@ -110,6 +110,9 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         pass
 
     await update.message.reply_text(
+        "‌", reply_markup=ReplyKeyboardRemove()
+    )
+    await update.message.reply_text(
         WELCOME + bonus_msg,
         reply_markup=kb.main_menu(),
         parse_mode=ParseMode.MARKDOWN,
