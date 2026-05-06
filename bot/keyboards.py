@@ -1,9 +1,17 @@
 """
 لوحات الأزرار (Inline Keyboards)
 """
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 
 from . import config
+
+
+def admin_reply_keyboard() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        [[KeyboardButton("/start"), KeyboardButton("/admin")]],
+        resize_keyboard=True,
+        persistent=True,
+    )
 
 
 def main_menu() -> InlineKeyboardMarkup:
