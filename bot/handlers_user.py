@@ -109,6 +109,12 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     except Exception:
                         pass
 
+    is_admin_user = (update.effective_user.id == config.ADMIN_ID)
+    if is_admin_user:
+        await update.message.reply_text(
+            "🔑 مرحباً أدمن!",
+            reply_markup=kb.admin_reply_keyboard(),
+        )
     await update.message.reply_text(
         WELCOME + bonus_msg,
         reply_markup=kb.main_menu(),
