@@ -751,21 +751,35 @@ async def price_check_job(context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def auto_exchange_rate_update(context: ContextTypes.DEFAULT_TYPE) -> None:
-    """يجلب سعر الدولار من موقع الليرة اليوم ويُبلّغ الأدمن فقط (بدون تطبيق تلقائي)."""
+    """يجلب سعر الدولار من قناة @SaymouaaExchange ويُبلّغ الأدمن."""
     if not config.ADMIN_ID:
         return
     try:
-        site_rate = await asyncio.to_thread(exchange_rate._fetch_rate_from_site)
+        result = await exchange_rate.update_rate_from_channel()
         cur_rate = config.get_syp_per_usd()
-        diff = site_rate - cur_rate
-        diff_str = f"+{diff:,.0f}" if diff >= 0 else f"{diff:,.0f}"
-        msg = (
-            f"🌐 *سعر الدولار من موقع الليرة اليوم*\n\n"
-            f"📡 السعر من الموقع: *{site_rate:,.0f} ل.س/$*\n"
-            f"💾 السعر المحفوظ: *{cur_rate:,.0f} ل.س/$*\n"
-            f"📊 الفرق: *{diff_str} ل.س*\n\n"
-            f"_لتطبيق السعر: لوحة الأدمن ← 💱 سعر الصرف ← 🌐 جلب السعر من الموقع_"
-        )
+        buy = result["buy"]
+        sell = result["sell"]
+        avg = result["avg"]
+        old = result["old_rate"]
+        changed = result["changed"]
+
+        if changed:
+            direction = "📈" if avg > old else "📉"
+            msg = (
+                f"💱 *تحديث سعر الصرف تلقائي*\n\n"
+                f"🛒 شراء: *{buy:,.0f} ل.س/$*\n"
+                f"💵 بيع:   *{sell:,.0f} ل.س/$*\n"
+                f"📊 متوسط: *{avg:,.0f} ل.س/$*\n\n"
+                f"{direction} تغيّر من *{old:,.0f}* إلى *{avg:,.0f}* ل.س/$\n"
+                f"_المصدر: @SaymouaaExchange_"
+            )
+        else:
+            msg = (
+                f"🌐 *سعر الصرف من @SaymouaaExchange*\n\n"
+                f"🛒 شراء: *{buy:,.0f} ل.س/$*\n"
+                f"💵 بيع:   *{sell:,.0f} ل.س/$*\n"
+                f"📊 متوسط محفوظ: *{cur_rate:,.0f} ل.س/$* _(لم يتغير)_"
+            )
         await _send_admin(context.application, msg)
     except Exception as e:
         logger.warning("auto_exchange_rate_update failed: %s", e)
