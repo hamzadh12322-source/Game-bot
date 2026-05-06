@@ -263,6 +263,63 @@ async def cb_admin_panel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await _show_rates_panel(q)
         return ConversationHandler.END
 
+    if data == "admin:rates:fetch":
+        await q.edit_message_text(
+            "⏳ جاري جلب السعر من موقع الليرة اليوم...",
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        try:
+            from . import exchange_rate as _er
+            site_rate = await asyncio.to_thread(_er._fetch_rate_from_site)
+            cur_rate = config.get_syp_per_usd()
+            diff = site_rate - cur_rate
+            diff_str = f"+{diff:,.0f}" if diff >= 0 else f"{diff:,.0f}"
+            text = (
+                "🌐 *سعر الدولار من موقع الليرة اليوم*\n"
+                "━━━━━━━━━━━━━━━━━\n\n"
+                f"📡 *السعر من الموقع:* `{site_rate:,.0f} ل.س/$`\n"
+                f"💾 *السعر المحفوظ حالياً:* `{cur_rate:,.0f} ل.س/$`\n"
+                f"📊 *الفرق:* `{diff_str} ل.س`\n\n"
+                "⚠️ _تنبيه: هذا السعر من موقع الليرة اليوم وقد يختلف عن سعر السوق الفعلي._\n\n"
+                "هل تريد تطبيق السعر من الموقع؟"
+            )
+            await q.edit_message_text(
+                text,
+                reply_markup=kb.admin_rates_apply_fetched(int(site_rate)),
+                parse_mode=ParseMode.MARKDOWN,
+            )
+        except Exception as e:
+            await q.edit_message_text(
+                f"❌ *فشل جلب السعر من الموقع*\n\n`{e}`\n\nتحقق من اتصال الإنترنت أو حاول لاحقاً.",
+                reply_markup=kb.admin_rates_panel(),
+                parse_mode=ParseMode.MARKDOWN,
+            )
+        return ConversationHandler.END
+
+    if data.startswith("admin:rates:apply:"):
+        try:
+            new_rate = int(data.split(":")[3])
+            if 1000 <= new_rate <= 500_000:
+                db.set_setting("syp_per_usd", str(new_rate))
+                await q.edit_message_text(
+                    f"✅ *تم تحديث سعر تسعير العروض إلى {new_rate:,} ل.س/$*".replace(",", "،"),
+                    reply_markup=kb.admin_rates_panel(),
+                    parse_mode=ParseMode.MARKDOWN,
+                )
+            else:
+                await q.edit_message_text(
+                    "❌ السعر خارج النطاق المسموح.",
+                    reply_markup=kb.admin_rates_panel(),
+                    parse_mode=ParseMode.MARKDOWN,
+                )
+        except Exception as e:
+            await q.edit_message_text(
+                f"❌ خطأ: {e}",
+                reply_markup=kb.admin_rates_panel(),
+                parse_mode=ParseMode.MARKDOWN,
+            )
+        return ConversationHandler.END
+
     if data == "admin:rates:set_offers":
         cur_rate = config.get_syp_per_usd()
         await q.edit_message_text(
