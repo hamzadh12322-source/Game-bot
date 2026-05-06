@@ -2908,7 +2908,8 @@ async def cancel_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE
         await q.answer()
         await q.edit_message_text(WELCOME, reply_markup=kb.main_menu(), parse_mode=ParseMode.MARKDOWN)
     else:
-        await update.message.reply_text(WELCOME, reply_markup=kb.main_menu(), parse_mode=ParseMode.MARKDOWN)
+        context.user_data.clear()
+        return await cmd_start(update, context)
     context.user_data.clear()
     return ConversationHandler.END
 
