@@ -93,6 +93,8 @@ def round_up_to_500(amount: float) -> int:
 
 
 PRICING_BASE_RATE = 14700  # سعر الصرف المرجعي الذي حُسبت عليه أسعار العروض الأصلية
+PRICING_BASE_MARGIN = 0.12  # هامش الربح الأصلي المدمج في أسعار config
+PROFIT_MARGIN = 0.05  # هامش الربح الحالي المطبّق على كل العروض
 
 
 def get_offer_price(offer: dict) -> int:
@@ -101,8 +103,7 @@ def get_offer_price(offer: dict) -> int:
     أولوية الحساب:
     1. لو عند الأدمن سعر يدوي محفوظ في DB لهذا العرض → نستخدمه (override).
     2. لو ما فيه `cost_usd` (رصيد محلي بل.س) → السعر ثابت من config.
-    3. غير ذلك → نسبة من السعر الأصلي حسب سعر الصرف الحالي،
-       مدورة لأقرب 500 ل.س.
+    3. غير ذلك → نحسب: qty × cost_usd × rate × (1 + PROFIT_MARGIN) مدور لأقرب 500 ل.س.
     """
     # 1) فحص override يدوي من DB
     offer_id = offer.get("id")
@@ -119,14 +120,14 @@ def get_offer_price(offer: dict) -> int:
     if base_price <= 0:
         return 0
     # 2) العروض اللي مالها علاقة بالدولار → سعر ثابت
-    if not offer.get("cost_usd"):
+    cost_usd = offer.get("cost_usd")
+    if not cost_usd:
         return base_price
-    # 3) العروض المرتبطة بالدولار → نسبة من السعر الأصلي حسب سعر الصرف الحالي
+    # 3) العروض المرتبطة بالدولار → نحسب من cost_usd مع هامش الربح الحالي
+    qty = offer.get("qty", 1) or 1
     current_rate = get_syp_per_usd()
-    if current_rate == PRICING_BASE_RATE:
-        return base_price
-    ratio = current_rate / PRICING_BASE_RATE
-    return round_up_to_500(base_price * ratio)
+    cost_syp = float(cost_usd) * qty * current_rate
+    return round_up_to_500(cost_syp * (1 + PROFIT_MARGIN))
 
 
 # ===== خريطة كل أقسام المنتجات للوحة تعديل الأسعار =====
