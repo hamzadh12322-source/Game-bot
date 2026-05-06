@@ -515,6 +515,7 @@ def admin_price_check_fix_confirm() -> InlineKeyboardMarkup:
 
 def admin_rates_panel() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🌐 جلب السعر من الموقع", callback_data="admin:rates:fetch")],
         [InlineKeyboardButton("✏️ تعديل سعر تسعير العروض", callback_data="admin:rates:set_offers")],
         [InlineKeyboardButton("✏️ تعديل سعر شحن الدولار", callback_data="admin:rates:set_recharge")],
         [InlineKeyboardButton("⬅️ رجوع للوحة الأدمن", callback_data="admin:panel")],
@@ -524,6 +525,13 @@ def admin_rates_panel() -> InlineKeyboardMarkup:
 def admin_rates_cancel() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("❌ إلغاء", callback_data="admin:rates")],
+    ])
+
+
+def admin_rates_apply_fetched(rate: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(f"✅ تطبيق {rate:,} ل.س/$".replace(",", "،"), callback_data=f"admin:rates:apply:{rate}")],
+        [InlineKeyboardButton("❌ تجاهل", callback_data="admin:rates")],
     ])
 
 
