@@ -1041,6 +1041,31 @@ async def cb_admin_recharge_decision(update: Update, context: ContextTypes.DEFAU
         except Exception as e:
             logger.error(f"level up notify failed: {e}")
         new_caption = f"✅ *تم القبول* — #{req_id} — {caption_amount}"
+
+        # إشعار قناة التوثيق
+        try:
+            user_info = db.get_user(int(req["user_id"])) or {}
+            uname = f"@{user_info['username']}" if user_info.get("username") else user_info.get("first_name", "—")
+            method_labels = {
+                "syriatel": "سيرياتيل كاش",
+                "shamcash": "شام كاش",
+                "shamcash_usd": "شام كاش دولار",
+                "manual": "يدوي",
+            }
+            method_ar = method_labels.get(req.get("method", ""), req.get("method", "—"))
+            channel_text = (
+                f"✅ *طلب شحن مقبول — #{req_id}*\n"
+                f"━━━━━━━━━━━━━━━\n"
+                f"👤 المستخدم: {uname} `({req['user_id']})`\n"
+                f"💳 طريقة الدفع: {method_ar}\n"
+                f"💰 المبلغ المضاف: *{caption_amount}*\n"
+                f"🏦 الرصيد الجديد: *{result['balance']:,.0f} ل.س*\n"
+                f"🏅 المستوى: {result['level']}"
+            )
+            await notify.notify_channel_only(context.bot, channel_text)
+        except Exception as _e:
+            logger.warning("channel notify recharge failed: %s", _e)
+
     else:
         db.update_recharge_status(req_id, "rejected")
         try:
@@ -1096,6 +1121,23 @@ async def cb_admin_order_decision(update: Update, context: ContextTypes.DEFAULT_
             await hu.send_rating_prompt(context.bot, order["user_id"], order_id, order.get("item", ""))
         except Exception:
             pass
+        # إشعار قناة التوثيق
+        try:
+            user_info = db.get_user(int(order["user_id"])) or {}
+            uname = f"@{user_info['username']}" if user_info.get("username") else user_info.get("first_name", "—")
+            channel_text = (
+                f"✅ *طلب شراء منفّذ — #{order_id}*\n"
+                f"━━━━━━━━━━━━━━━\n"
+                f"👤 المستخدم: {uname} `({order['user_id']})`\n"
+                f"🎮 اللعبة: {order['game']}\n"
+                f"🎁 العرض: {order['item']}\n"
+                f"🆔 ID اللاعب: `{order['player_id']}`\n"
+                f"💰 المبلغ: *{float(order.get('price',0)):,.0f} ل.س*"
+            )
+            await notify.notify_channel_only(context.bot, channel_text)
+        except Exception as _e:
+            logger.warning("channel notify order failed: %s", _e)
+
         await q.edit_message_text(f"✅ *تم التنفيذ* — #{order_id}", parse_mode=ParseMode.MARKDOWN)
     else:
         db.update_order_status(order_id, "rejected")
