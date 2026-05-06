@@ -515,7 +515,7 @@ def admin_price_check_fix_confirm() -> InlineKeyboardMarkup:
 
 def admin_rates_panel() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🌐 جلب السعر من الموقع", callback_data="admin:rates:fetch")],
+        [InlineKeyboardButton("📡 جلب السعر من @SaymouaaExchange", callback_data="admin:rates:fetch")],
         [InlineKeyboardButton("✏️ تعديل سعر تسعير العروض", callback_data="admin:rates:set_offers")],
         [InlineKeyboardButton("✏️ تعديل سعر شحن الدولار", callback_data="admin:rates:set_recharge")],
         [InlineKeyboardButton("⬅️ رجوع للوحة الأدمن", callback_data="admin:panel")],
