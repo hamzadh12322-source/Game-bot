@@ -7,7 +7,7 @@ import re
 import uuid
 from typing import Optional, Dict, Any
 
-from telegram import Update
+from telegram import Update, ReplyKeyboardRemove
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import (
@@ -109,23 +109,11 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     except Exception:
                         pass
 
-    is_admin_user = (update.effective_user.id == config.ADMIN_ID)
-    if is_admin_user:
-        await update.message.reply_text(
-            WELCOME + bonus_msg,
-            reply_markup=kb.admin_reply_keyboard(),
-            parse_mode=ParseMode.MARKDOWN,
-        )
-        await update.message.reply_text(
-            "👇 اختر من القائمة:",
-            reply_markup=kb.main_menu(),
-        )
-    else:
-        await update.message.reply_text(
-            WELCOME + bonus_msg,
-            reply_markup=kb.main_menu(),
-            parse_mode=ParseMode.MARKDOWN,
-        )
+    await update.message.reply_text(
+        WELCOME + bonus_msg,
+        reply_markup=kb.main_menu(),
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
 
 async def notify_level_up(bot, user_id: int, recharge_state: Optional[Dict[str, Any]]) -> None:
