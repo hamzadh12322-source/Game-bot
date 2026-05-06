@@ -346,7 +346,7 @@ async def compute_price_check_data(threshold_pct: float = 1.0) -> dict:
 
     priced_offers = config.collect_priced_offers()
     syp_rate = config.get_syp_per_usd()
-    target_margin = 0.12  # 12% هامش الربح المستهدف لاقتراح السعر
+    target_margin = config.PROFIT_MARGIN  # هامش الربح المستهدف لاقتراح السعر
 
     loss, thin, up, down = [], [], [], []
     missing, unavailable, smm_skipped = [], [], []
