@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from telegram.constants import ParseMode
 from telegram.ext import Application, ContextTypes
 
-from . import config, database as db, fastcard
+from . import config, database as db, fastcard, exchange_rate
 
 logger = logging.getLogger(__name__)
 
@@ -750,6 +750,24 @@ async def price_check_job(context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.exception("price_check_job failed: %s", e)
 
 
+async def auto_exchange_rate_update(context: ContextTypes.DEFAULT_TYPE) -> None:
+    """يجلب سعر الدولار من موقع الليرة اليوم ويحدّثه تلقائياً في DB."""
+    try:
+        result = await exchange_rate.update_rate_from_site()
+        if result["changed"] and config.ADMIN_ID:
+            old = result["old_rate"]
+            new = result["rate"]
+            direction = "📈 ارتفع" if new > old else "📉 انخفض"
+            msg = (
+                f"💱 *تحديث سعر الصرف تلقائي*\n\n"
+                f"{direction}: *{old:,.0f}* → *{new:,.0f}* ل.س/دولار\n"
+                f"_المصدر: موقع الليرة اليوم_"
+            )
+            await _send_admin(context.application, msg)
+    except Exception as e:
+        logger.warning("auto_exchange_rate_update failed: %s", e)
+
+
 def schedule_jobs(app: Application) -> None:
     """يُسجّل المهام المجدولة على JobQueue الخاص بالتطبيق."""
     jq = app.job_queue
@@ -777,6 +795,14 @@ def schedule_jobs(app: Application) -> None:
             first=120,                # أول فحص بعد دقيقتين من الإقلاع
             name="auto_coupon_check",
         )
+
+    # تحديث سعر الصرف تلقائياً من موقع الليرة اليوم كل ساعة
+    jq.run_repeating(
+        auto_exchange_rate_update,
+        interval=3600,   # كل ساعة
+        first=30,        # أول تحديث بعد 30 ثانية من الإقلاع
+        name="exchange_rate_update",
+    )
 
     # فحص أسعار Fastcard اليومي — يقارن cost_usd مع API ويرسل تنبيه بالفروق
     if fastcard.is_enabled():
