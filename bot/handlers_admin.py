@@ -265,32 +265,36 @@ async def cb_admin_panel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if data == "admin:rates:fetch":
         await q.edit_message_text(
-            "⏳ جاري جلب السعر من موقع الليرة اليوم...",
+            "⏳ جاري جلب السعر من قناة @SaymouaaExchange...",
             parse_mode=ParseMode.MARKDOWN,
         )
         try:
             from . import exchange_rate as _er
-            site_rate = await asyncio.to_thread(_er._fetch_rate_from_site)
+            ch = await asyncio.to_thread(_er._fetch_rate_from_channel)
+            buy = ch["buy"]
+            sell = ch["sell"]
+            avg = ch["avg"]
             cur_rate = config.get_syp_per_usd()
-            diff = site_rate - cur_rate
+            diff = avg - cur_rate
             diff_str = f"+{diff:,.0f}" if diff >= 0 else f"{diff:,.0f}"
             text = (
-                "🌐 *سعر الدولار من موقع الليرة اليوم*\n"
+                "🌐 *سعر الدولار من @SaymouaaExchange*\n"
                 "━━━━━━━━━━━━━━━━━\n\n"
-                f"📡 *السعر من الموقع:* `{site_rate:,.0f} ل.س/$`\n"
+                f"🛒 *شراء:* `{buy:,.0f} ل.س/$`\n"
+                f"💵 *بيع:*   `{sell:,.0f} ل.س/$`\n"
+                f"📊 *متوسط:* `{avg:,.0f} ل.س/$`\n\n"
                 f"💾 *السعر المحفوظ حالياً:* `{cur_rate:,.0f} ل.س/$`\n"
-                f"📊 *الفرق:* `{diff_str} ل.س`\n\n"
-                "⚠️ _تنبيه: هذا السعر من موقع الليرة اليوم وقد يختلف عن سعر السوق الفعلي._\n\n"
-                "هل تريد تطبيق السعر من الموقع؟"
+                f"📈 *الفرق:* `{diff_str} ل.س`\n\n"
+                "هل تريد تطبيق *المتوسط* كسعر تسعير العروض؟"
             )
             await q.edit_message_text(
                 text,
-                reply_markup=kb.admin_rates_apply_fetched(int(site_rate)),
+                reply_markup=kb.admin_rates_apply_fetched(avg),
                 parse_mode=ParseMode.MARKDOWN,
             )
         except Exception as e:
             await q.edit_message_text(
-                f"❌ *فشل جلب السعر من الموقع*\n\n`{e}`\n\nتحقق من اتصال الإنترنت أو حاول لاحقاً.",
+                f"❌ *فشل جلب السعر من القناة*\n\n`{e}`\n\nتحقق من الاتصال أو حاول لاحقاً.",
                 reply_markup=kb.admin_rates_panel(),
                 parse_mode=ParseMode.MARKDOWN,
             )
