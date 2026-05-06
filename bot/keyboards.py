@@ -10,7 +10,6 @@ def admin_reply_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [[KeyboardButton("/start"), KeyboardButton("/admin")]],
         resize_keyboard=True,
-        persistent=True,
     )
 
 
