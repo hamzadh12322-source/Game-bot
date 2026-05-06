@@ -751,19 +751,22 @@ async def price_check_job(context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def auto_exchange_rate_update(context: ContextTypes.DEFAULT_TYPE) -> None:
-    """يجلب سعر الدولار من موقع الليرة اليوم ويحدّثه تلقائياً في DB."""
+    """يجلب سعر الدولار من موقع الليرة اليوم ويُبلّغ الأدمن فقط (بدون تطبيق تلقائي)."""
+    if not config.ADMIN_ID:
+        return
     try:
-        result = await exchange_rate.update_rate_from_site()
-        if result["changed"] and config.ADMIN_ID:
-            old = result["old_rate"]
-            new = result["rate"]
-            direction = "📈 ارتفع" if new > old else "📉 انخفض"
-            msg = (
-                f"💱 *تحديث سعر الصرف تلقائي*\n\n"
-                f"{direction}: *{old:,.0f}* → *{new:,.0f}* ل.س/دولار\n"
-                f"_المصدر: موقع الليرة اليوم_"
-            )
-            await _send_admin(context.application, msg)
+        site_rate = await asyncio.to_thread(exchange_rate._fetch_rate_from_site)
+        cur_rate = config.get_syp_per_usd()
+        diff = site_rate - cur_rate
+        diff_str = f"+{diff:,.0f}" if diff >= 0 else f"{diff:,.0f}"
+        msg = (
+            f"🌐 *سعر الدولار من موقع الليرة اليوم*\n\n"
+            f"📡 السعر من الموقع: *{site_rate:,.0f} ل.س/$*\n"
+            f"💾 السعر المحفوظ: *{cur_rate:,.0f} ل.س/$*\n"
+            f"📊 الفرق: *{diff_str} ل.س*\n\n"
+            f"_لتطبيق السعر: لوحة الأدمن ← 💱 سعر الصرف ← 🌐 جلب السعر من الموقع_"
+        )
+        await _send_admin(context.application, msg)
     except Exception as e:
         logger.warning("auto_exchange_rate_update failed: %s", e)
 
