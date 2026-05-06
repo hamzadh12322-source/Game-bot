@@ -109,9 +109,11 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     except Exception:
                         pass
 
-    await update.message.reply_text(
-        "‌", reply_markup=ReplyKeyboardRemove()
-    )
+    rm = await update.message.reply_text(".", reply_markup=ReplyKeyboardRemove())
+    try:
+        await rm.delete()
+    except Exception:
+        pass
     await update.message.reply_text(
         WELCOME + bonus_msg,
         reply_markup=kb.main_menu(),
