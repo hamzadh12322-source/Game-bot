@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
     LOYALTY_REDEEM_AMOUNT,
     COUPON_CODE_INPUT,
     FASTCARD_CUSTOM_AMOUNT,
-) = range(13)
+) = range(11)
 
 
 WELCOME = (
