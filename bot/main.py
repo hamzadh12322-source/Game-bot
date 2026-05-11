@@ -46,7 +46,7 @@ async def _post_init(app: Application) -> None:
 
     if config.ADMIN_ID:
         admin_cmds = [
-            BotCommand("start", "🏠 القائمة الرئيسية"),
+            BotCommand("start", "🏠 ال"),
             BotCommand("admin", "🛠️ لوحة الأدمن"),
         ]
         try:
