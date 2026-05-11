@@ -39,14 +39,14 @@ def _start_health_server():
 
 async def _post_init(app: Application) -> None:
     public_cmds = [
-        BotCommand("start", "🏠 ا"),
+        BotCommand("start", "🏠 قائمة الرئيسية"),
     ]
     await app.bot.set_my_commands(public_cmds, scope=BotCommandScopeDefault())
     await app.bot.set_chat_menu_button(menu_button=MenuButtonCommands())
 
     if config.ADMIN_ID:
         admin_cmds = [
-            BotCommand("start", "🏠 ال"),
+            BotCommand("start", "🏠 قائمة الرئيسية"),
             BotCommand("admin", "🛠️ لوحة الأدمن"),
         ]
         try:
