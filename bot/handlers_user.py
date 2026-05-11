@@ -35,8 +35,6 @@ from .syriatel_cash import SyriatelCashError
 logger = logging.getLogger(__name__)
 
 (
-    USDT_AMOUNT
-    USDT_PHOTO
     SYRIATEL_TX_CODE,
     SYRIATEL_AMOUNT,
     SHAMCASH_AMOUNT,
