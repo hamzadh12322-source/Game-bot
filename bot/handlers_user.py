@@ -35,6 +35,8 @@ from .syriatel_cash import SyriatelCashError
 logger = logging.getLogger(__name__)
 
 (
+    USDT_AMOUNT
+    USDT_PHOTO
     SYRIATEL_TX_CODE,
     SYRIATEL_AMOUNT,
     SHAMCASH_AMOUNT,
@@ -46,7 +48,7 @@ logger = logging.getLogger(__name__)
     LOYALTY_REDEEM_AMOUNT,
     COUPON_CODE_INPUT,
     FASTCARD_CUSTOM_AMOUNT,
-) = range(11)
+) = range(13)
 
 
 WELCOME = (
