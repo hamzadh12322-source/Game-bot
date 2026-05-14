@@ -2,6 +2,7 @@
 طبقة قاعدة البيانات - SQLite
 """
 import sqlite3
+import os
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Optional, List, Dict, Any
@@ -186,6 +187,9 @@ def init_db():
 
 @contextmanager
 def get_conn():
+    db_dir = os.path.dirname(config.DB_PATH)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
     conn = sqlite3.connect(config.DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
